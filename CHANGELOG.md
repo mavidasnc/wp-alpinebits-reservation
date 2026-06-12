@@ -7,6 +7,12 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-06-12
+
+### Corretto
+- Build ZIP di rilascio: usa `git archive` per garantire l'inclusione di tutti i file tracciati (nella v0.2.0 il file principale `wp-alpinebits-reservation.php` era assente dallo ZIP).
+- Aggiunto `*.zip` al `.gitignore`; il file di rilascio viene ora salvato nella cartella del plugin.
+
 ## [0.2.0] - 2026-06-12
 
 ### Aggiunto
@@ -47,6 +53,7 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...HEAD
+[0.2.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/releases/tag/v0.1.0
