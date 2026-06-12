@@ -13,14 +13,16 @@ use Mavida\AlpineBitsReservation\Admin\Tabs\ConnectionTab;
 use Mavida\AlpineBitsReservation\Admin\Tabs\FormsTab;
 use Mavida\AlpineBitsReservation\Admin\Tabs\LogTab;
 use Mavida\AlpineBitsReservation\Admin\Tabs\MappingTab;
+use Mavida\AlpineBitsReservation\Admin\Tabs\NotificationsTab;
 use Mavida\AlpineBitsReservation\Api\Client;
 use Mavida\AlpineBitsReservation\Reservations\Sender;
+use Mavida\AlpineBitsReservation\Updater\VersionChecker;
 
 /**
  * Classe AdminMenu.
  *
  * Registra la voce di menu e gestisce il routing tra i tab.
- * Gestisce anche le action AJAX per test connessione, reload campi e reinvio.
+ * Gestisce anche le action AJAX per test connessione, reload campi, reinvio e check versione.
  */
 class AdminMenu {
 
@@ -36,18 +38,19 @@ class AdminMenu {
 	 *
 	 * @var array<string, string>
 	 */
-	private array $tabs = array();
+	private array $tabs = [];
 
 	/**
 	 * Inizializza le istanze dei tab.
 	 */
 	public function __construct() {
-		$this->tabs = array(
-			'connection' => __( 'Connessione', 'wp-alpinebits-reservation' ),
-			'forms'      => __( 'Moduli', 'wp-alpinebits-reservation' ),
-			'mapping'    => __( 'Mapping', 'wp-alpinebits-reservation' ),
-			'log'        => __( 'Invii', 'wp-alpinebits-reservation' ),
-		);
+		$this->tabs = [
+			'connection'    => __( 'Connessione', 'wp-alpinebits-reservation' ),
+			'forms'         => __( 'Moduli', 'wp-alpinebits-reservation' ),
+			'mapping'       => __( 'Mapping', 'wp-alpinebits-reservation' ),
+			'notifications' => __( 'Notifiche', 'wp-alpinebits-reservation' ),
+			'log'           => __( 'Invii', 'wp-alpinebits-reservation' ),
+		];
 	}
 
 	/**
@@ -56,15 +59,14 @@ class AdminMenu {
 	 * @return void
 	 */
 	public function register(): void {
-		add_action( 'admin_menu', array( $this, 'add_menu' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_assets' ) );
+		add_action( 'admin_menu', [ $this, 'add_menu' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
-		// AJAX: test connessione API.
-		add_action( 'wp_ajax_wpar_test_connection', array( $this, 'ajax_test_connection' ) );
-		// AJAX: caricamento campi form per il tab Mapping.
-		add_action( 'wp_ajax_wpar_get_form_fields', array( $this, 'ajax_get_form_fields' ) );
-		// AJAX: reinvio di una submission.
-		add_action( 'wp_ajax_wpar_resend', array( $this, 'ajax_resend' ) );
+		// AJAX handlers.
+		add_action( 'wp_ajax_wpar_test_connection', [ $this, 'ajax_test_connection' ] );
+		add_action( 'wp_ajax_wpar_get_form_fields', [ $this, 'ajax_get_form_fields' ] );
+		add_action( 'wp_ajax_wpar_resend', [ $this, 'ajax_resend' ] );
+		add_action( 'wp_ajax_wpar_check_version', [ $this, 'ajax_check_version' ] );
 	}
 
 	/**
@@ -78,7 +80,7 @@ class AdminMenu {
 			__( 'AlpineBits', 'wp-alpinebits-reservation' ),
 			'manage_options',
 			self::PAGE_SLUG,
-			array( $this, 'render_page' ),
+			[ $this, 'render_page' ],
 			'dashicons-calendar-alt',
 			75
 		);
@@ -91,43 +93,46 @@ class AdminMenu {
 	 * @return void
 	 */
 	public function enqueue_assets( string $hook_suffix ): void {
-		// Carica solo nella pagina del plugin.
 		if ( ! str_contains( $hook_suffix, self::PAGE_SLUG ) ) {
 			return;
 		}
 
 		wp_enqueue_style(
 			'wpar-admin',
-			WPAR_PLUGIN_URL . 'assets/css/admin.css',
-			array(),
-			WPAR_VERSION
+			\WPAR_PLUGIN_URL . 'assets/css/admin.css',
+			[],
+			\WPAR_VERSION
 		);
 
 		wp_enqueue_script(
 			'wpar-admin',
-			WPAR_PLUGIN_URL . 'assets/js/admin-mapping.js',
-			array( 'jquery' ),
-			WPAR_VERSION,
+			\WPAR_PLUGIN_URL . 'assets/js/admin-mapping.js',
+			[ 'jquery' ],
+			\WPAR_VERSION,
 			true
 		);
 
-		// Passa dati PHP al JavaScript.
 		wp_localize_script(
 			'wpar-admin',
 			'wparAdmin',
-			array(
+			[
 				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 				'nonce'   => wp_create_nonce( 'wpar_admin_nonce' ),
-				'i18n'    => array(
-					'testOk'     => __( 'Connessione riuscita', 'wp-alpinebits-reservation' ),
-					'testFail'   => __( 'Connessione fallita', 'wp-alpinebits-reservation' ),
-					'resendOk'   => __( 'Reinviato con successo', 'wp-alpinebits-reservation' ),
-					'resendFail' => __( 'Reinvio fallito', 'wp-alpinebits-reservation' ),
-					'loading'    => __( 'Caricamento...', 'wp-alpinebits-reservation' ),
-					'none'       => __( '— Nessuno (campo non mappato) —', 'wp-alpinebits-reservation' ),
-					'const'      => __( '— Valore costante —', 'wp-alpinebits-reservation' ),
-				),
-			)
+				'i18n'    => [
+					'testOk'           => __( 'Connessione riuscita', 'wp-alpinebits-reservation' ),
+					'testFail'         => __( 'Connessione fallita', 'wp-alpinebits-reservation' ),
+					'resendOk'         => __( 'Reinviato con successo', 'wp-alpinebits-reservation' ),
+					'resendFail'       => __( 'Reinvio fallito', 'wp-alpinebits-reservation' ),
+					'loading'          => __( 'Caricamento...', 'wp-alpinebits-reservation' ),
+					'none'             => __( '— Nessuno (campo non mappato) —', 'wp-alpinebits-reservation' ),
+					'const'            => __( '— Valore costante —', 'wp-alpinebits-reservation' ),
+					'versionChecking'  => __( 'Controllo in corso...', 'wp-alpinebits-reservation' ),
+					'versionUpToDate'  => __( 'Sei alla versione più recente.', 'wp-alpinebits-reservation' ),
+					'versionAvailable' => __( 'Nuova versione disponibile:', 'wp-alpinebits-reservation' ),
+					'versionUpdate'    => __( 'Aggiorna ora', 'wp-alpinebits-reservation' ),
+					'versionError'     => __( 'Impossibile verificare gli aggiornamenti.', 'wp-alpinebits-reservation' ),
+				],
+			]
 		);
 	}
 
@@ -153,7 +158,7 @@ class AdminMenu {
 		<div class="wrap wpar-wrap">
 			<h1>
 				<?php esc_html_e( 'AlpineBits Reservation', 'wp-alpinebits-reservation' ); ?>
-				<span class="wpar-version">v<?php echo esc_html( WPAR_VERSION ); ?></span>
+				<span class="wpar-version">v<?php echo esc_html( \WPAR_VERSION ); ?></span>
 			</h1>
 
 			<nav class="nav-tab-wrapper">
@@ -182,11 +187,12 @@ class AdminMenu {
 	 */
 	private function render_tab( string $tab ): void {
 		match ( $tab ) {
-			'connection' => ( new ConnectionTab() )->render(),
-			'forms'      => ( new FormsTab() )->render(),
-			'mapping'    => ( new MappingTab() )->render(),
-			'log'        => ( new LogTab() )->render(),
-			default      => ( new ConnectionTab() )->render(),
+			'connection'    => ( new ConnectionTab() )->render(),
+			'forms'         => ( new FormsTab() )->render(),
+			'mapping'       => ( new MappingTab() )->render(),
+			'notifications' => ( new NotificationsTab() )->render(),
+			'log'           => ( new LogTab() )->render(),
+			default         => ( new ConnectionTab() )->render(),
 		};
 	}
 
@@ -203,20 +209,20 @@ class AdminMenu {
 		check_ajax_referer( 'wpar_admin_nonce', 'nonce' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => __( 'Permessi insufficienti.', 'wp-alpinebits-reservation' ) ) );
+			wp_send_json_error( [ 'message' => __( 'Permessi insufficienti.', 'wp-alpinebits-reservation' ) ] );
 		}
 
 		$result = ( new Client() )->test_connection();
 
 		if ( $result->success ) {
 			wp_send_json_success(
-				array(
+				[
 					/* translators: %d: HTTP status code */
 					'message' => sprintf( __( 'Connessione riuscita (HTTP %d).', 'wp-alpinebits-reservation' ), $result->http_code ),
-				)
+				]
 			);
 		} else {
-			wp_send_json_error( array( 'message' => $result->error ) );
+			wp_send_json_error( [ 'message' => $result->error ] );
 		}
 	}
 
@@ -235,11 +241,11 @@ class AdminMenu {
 		$form_id = isset( $_POST['form_id'] ) ? (int) $_POST['form_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $form_id <= 0 ) {
-			wp_send_json_error( array( 'message' => 'form_id non valido.' ) );
+			wp_send_json_error( [ 'message' => 'form_id non valido.' ] );
 		}
 
 		$fields = \Mavida\AlpineBitsReservation\Cf7\FormFields::for_form( $form_id );
-		wp_send_json_success( array( 'fields' => $fields ) );
+		wp_send_json_success( [ 'fields' => $fields ] );
 	}
 
 	/**
@@ -257,15 +263,40 @@ class AdminMenu {
 		$row_id = isset( $_POST['row_id'] ) ? (int) $_POST['row_id'] : 0; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		if ( $row_id <= 0 ) {
-			wp_send_json_error( array( 'message' => 'ID non valido.' ) );
+			wp_send_json_error( [ 'message' => 'ID non valido.' ] );
 		}
 
 		$success = ( new Sender() )->resend( $row_id );
 
 		if ( $success ) {
-			wp_send_json_success( array( 'message' => __( 'Reinviato con successo.', 'wp-alpinebits-reservation' ) ) );
+			wp_send_json_success( [ 'message' => __( 'Reinviato con successo.', 'wp-alpinebits-reservation' ) ] );
 		} else {
-			wp_send_json_error( array( 'message' => __( 'Reinvio fallito. Controllare il tab Invii per i dettagli.', 'wp-alpinebits-reservation' ) ) );
+			wp_send_json_error( [ 'message' => __( 'Reinvio fallito. Controllare il tab Invii per i dettagli.', 'wp-alpinebits-reservation' ) ] );
 		}
+	}
+
+	/**
+	 * AJAX: verifica la disponibilità di una nuova versione su GitHub.
+	 *
+	 * Svuota la cache locale e quella di WordPress per forzare un controllo fresco.
+	 *
+	 * @return void
+	 */
+	public function ajax_check_version(): void {
+		check_ajax_referer( 'wpar_admin_nonce', 'nonce' );
+
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( [ 'message' => __( 'Permessi insufficienti.', 'wp-alpinebits-reservation' ) ] );
+		}
+
+		$checker = new VersionChecker();
+		$checker->clear_cache();
+		$result = $checker->check_latest();
+
+		if ( isset( $result['error'] ) ) {
+			wp_send_json_error( [ 'message' => $result['error'] ] );
+		}
+
+		wp_send_json_success( $result );
 	}
 }

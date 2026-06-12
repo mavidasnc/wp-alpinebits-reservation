@@ -19,8 +19,6 @@ use Mavida\AlpineBitsReservation\Support\Crypto;
  * - WPAR_API_USERNAME
  * - WPAR_API_PASSWORD
  * - WPAR_API_BASE_URL
- * - WPAR_GITHUB_OWNER
- * - WPAR_GITHUB_REPO
  */
 class Options {
 
@@ -45,8 +43,15 @@ class Options {
 	 */
 	const OPTION_MAPPINGS = 'wpar_field_mappings';
 
+	/**
+	 * Chiave delle impostazioni di notifica email.
+	 *
+	 * @var string
+	 */
+	const OPTION_NOTIFICATIONS = 'wpar_notification_settings';
+
 	// -------------------------------------------------------------------------
-	// Lettura impostazioni
+	// Lettura impostazioni API
 	// -------------------------------------------------------------------------
 
 	/**
@@ -55,16 +60,14 @@ class Options {
 	 * @return array<string, mixed>
 	 */
 	public static function get_all(): array {
-		$defaults = array(
+		$defaults = [
 			'api_base_url'   => 'https://alpinebits-gateway.ando.cloud/api/v1',
 			'api_username'   => '',
 			'api_password'   => '',
 			'default_status' => 'request',
-			'github_owner'   => 'mavidasnc',
-			'github_repo'    => 'wp-alpinebits-reservation',
-		);
+		];
 
-		$saved = get_option( self::OPTION_SETTINGS, array() );
+		$saved = get_option( self::OPTION_SETTINGS, [] );
 		return wp_parse_args( $saved, $defaults );
 	}
 
@@ -112,31 +115,7 @@ class Options {
 	 */
 	public static function default_status(): string {
 		$status = (string) ( self::get_all()['default_status'] ?? 'request' );
-		return in_array( $status, array( 'request', 'reservation' ), true ) ? $status : 'request';
-	}
-
-	/**
-	 * Restituisce il proprietario del repo GitHub.
-	 *
-	 * @return string
-	 */
-	public static function github_owner(): string {
-		if ( defined( 'WPAR_GITHUB_OWNER' ) ) {
-			return (string) \WPAR_GITHUB_OWNER;
-		}
-		return (string) ( self::get_all()['github_owner'] ?? '' );
-	}
-
-	/**
-	 * Restituisce il nome del repo GitHub.
-	 *
-	 * @return string
-	 */
-	public static function github_repo(): string {
-		if ( defined( 'WPAR_GITHUB_REPO' ) ) {
-			return (string) \WPAR_GITHUB_REPO;
-		}
-		return (string) ( self::get_all()['github_repo'] ?? '' );
+		return in_array( $status, [ 'request', 'reservation' ], true ) ? $status : 'request';
 	}
 
 	/**
@@ -145,7 +124,7 @@ class Options {
 	 * @return int[]
 	 */
 	public static function enabled_forms(): array {
-		$forms = get_option( self::OPTION_ENABLED_FORMS, array() );
+		$forms = get_option( self::OPTION_ENABLED_FORMS, [] );
 		return array_map( 'intval', (array) $forms );
 	}
 
@@ -156,8 +135,31 @@ class Options {
 	 * @return array<string, string> Mappa: api_field_path => cf7_field_name|'__const:valore'
 	 */
 	public static function field_mapping( int $form_id ): array {
-		$all = get_option( self::OPTION_MAPPINGS, array() );
-		return (array) ( $all[ $form_id ] ?? array() );
+		$all = get_option( self::OPTION_MAPPINGS, [] );
+		return (array) ( $all[ $form_id ] ?? [] );
+	}
+
+	// -------------------------------------------------------------------------
+	// Lettura impostazioni notifiche
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Restituisce le impostazioni di notifica email con i valori di default.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function notifications(): array {
+		$defaults = [
+			'email_to'          => '',
+			'email_subject'     => 'Prenotazione [{externalid}] - {status}',
+			'email_body'        => "Prenotazione ricevuta.\n\nID: {externalid}\nStato: {status}\nRemote ID: {remote_id}\nData: {date}\n\n--- DATI FORM ---\n{all_fields}\n\n--- ESITO API ---\nHTTP: {http_code}\nErrore: {api_error}",
+			'notify_on_success' => '1',
+			'notify_on_error'   => '1',
+			'notify_on_resend'  => '1',
+		];
+
+		$saved = get_option( self::OPTION_NOTIFICATIONS, [] );
+		return wp_parse_args( (array) $saved, $defaults );
 	}
 
 	// -------------------------------------------------------------------------
@@ -181,18 +183,35 @@ class Options {
 			$data['api_password'] = $current['api_password'];
 		}
 
-		$to_save = array(
+		$to_save = [
 			'api_base_url'   => sanitize_url( (string) ( $data['api_base_url'] ?? '' ) ),
 			'api_username'   => sanitize_text_field( (string) ( $data['api_username'] ?? '' ) ),
 			'api_password'   => (string) $data['api_password'],
-			'default_status' => in_array( $data['default_status'] ?? '', array( 'request', 'reservation' ), true )
+			'default_status' => in_array( $data['default_status'] ?? '', [ 'request', 'reservation' ], true )
 				? $data['default_status']
 				: 'request',
-			'github_owner'   => sanitize_text_field( (string) ( $data['github_owner'] ?? '' ) ),
-			'github_repo'    => sanitize_text_field( (string) ( $data['github_repo'] ?? '' ) ),
-		);
+		];
 
 		return update_option( self::OPTION_SETTINGS, $to_save, false );
+	}
+
+	/**
+	 * Salva le impostazioni di notifica email.
+	 *
+	 * @param  array<string, string> $data Dati da salvare.
+	 * @return bool
+	 */
+	public static function save_notifications( array $data ): bool {
+		$to_save = [
+			'email_to'          => sanitize_email( (string) ( $data['email_to'] ?? '' ) ),
+			'email_subject'     => sanitize_text_field( (string) ( $data['email_subject'] ?? '' ) ),
+			'email_body'        => wp_kses_post( (string) ( $data['email_body'] ?? '' ) ),
+			'notify_on_success' => ! empty( $data['notify_on_success'] ) ? '1' : '',
+			'notify_on_error'   => ! empty( $data['notify_on_error'] ) ? '1' : '',
+			'notify_on_resend'  => ! empty( $data['notify_on_resend'] ) ? '1' : '',
+		];
+
+		return update_option( self::OPTION_NOTIFICATIONS, $to_save, false );
 	}
 
 	/**
@@ -216,7 +235,7 @@ class Options {
 	 * @return bool
 	 */
 	public static function save_field_mapping( int $form_id, array $mapping ): bool {
-		$all             = (array) get_option( self::OPTION_MAPPINGS, array() );
+		$all             = (array) get_option( self::OPTION_MAPPINGS, [] );
 		$all[ $form_id ] = $mapping;
 		return update_option( self::OPTION_MAPPINGS, $all, false );
 	}

@@ -42,28 +42,37 @@ class Repository {
 	 * @param  int                  $form_id    ID del form CF7.
 	 * @param  string               $externalid ID esterno generato.
 	 * @param  array<string, mixed> $payload    Payload JSON da inviare.
+	 * @param  array<string, mixed> $cf7_data   Dati originali del form CF7 (per le notifiche e il reinvio).
 	 * @return int                              ID della riga inserita, 0 in caso di errore.
 	 */
-	public function insert( int $form_id, string $externalid, array $payload ): int {
+	public function insert( int $form_id, string $externalid, array $payload, array $cf7_data = [] ): int {
 		global $wpdb;
 
 		$now = current_time( 'mysql', true );
 
+		$data   = [
+			'form_id'    => $form_id,
+			'externalid' => $externalid,
+			'payload'    => wp_json_encode( $payload ),
+			'status'     => self::STATUS_PENDING,
+			'http_code'  => null,
+			'response'   => null,
+			'remote_id'  => null,
+			'attempts'   => 0,
+			'created_at' => $now,
+			'updated_at' => $now,
+		];
+		$format = [ '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s' ];
+
+		if ( ! empty( $cf7_data ) ) {
+			$data['cf7_data'] = wp_json_encode( $cf7_data );
+			$format[]         = '%s';
+		}
+
 		$result = $wpdb->insert( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			self::table_name(),
-			array(
-				'form_id'    => $form_id,
-				'externalid' => $externalid,
-				'payload'    => wp_json_encode( $payload ),
-				'status'     => self::STATUS_PENDING,
-				'http_code'  => null,
-				'response'   => null,
-				'remote_id'  => null,
-				'attempts'   => 0,
-				'created_at' => $now,
-				'updated_at' => $now,
-			),
-			array( '%d', '%s', '%s', '%s', '%d', '%s', '%s', '%d', '%s', '%s' )
+			$data,
+			$format
 		);
 
 		return $result ? (int) $wpdb->insert_id : 0;
@@ -127,22 +136,22 @@ class Repository {
 	 * @param  array<string, mixed> $args Argomenti: status, form_id, per_page, page, orderby, order.
 	 * @return object[]
 	 */
-	public function get_list( array $args = array() ): array {
+	public function get_list( array $args = [] ): array {
 		global $wpdb;
 
-		$defaults = array(
+		$defaults = [
 			'status'   => '',
 			'form_id'  => 0,
 			'per_page' => 20,
 			'page'     => 1,
 			'orderby'  => 'id',
 			'order'    => 'DESC',
-		);
+		];
 		$args     = wp_parse_args( $args, $defaults );
 
 		// Costruzione WHERE.
-		$where  = array( '1=1' );
-		$params = array();
+		$where  = [ '1=1' ];
+		$params = [];
 
 		if ( ! empty( $args['status'] ) ) {
 			$where[]  = 'status = %s';
@@ -155,8 +164,8 @@ class Repository {
 		}
 
 		// Whitelist per ORDER BY (sicurezza: non si usa prepare per colonne).
-		$allowed_order = array( 'id', 'form_id', 'status', 'created_at', 'updated_at', 'attempts' );
-		$allowed_dir   = array( 'ASC', 'DESC' );
+		$allowed_order = [ 'id', 'form_id', 'status', 'created_at', 'updated_at', 'attempts' ];
+		$allowed_dir   = [ 'ASC', 'DESC' ];
 		$orderby       = in_array( $args['orderby'], $allowed_order, true ) ? $args['orderby'] : 'id';
 		$order         = in_array( strtoupper( $args['order'] ), $allowed_dir, true ) ? strtoupper( $args['order'] ) : 'DESC';
 
@@ -170,7 +179,7 @@ class Repository {
 		if ( ! empty( $params ) ) {
 			$wpar_sql = $wpdb->prepare(
 				"SELECT * FROM `{$table}` WHERE {$where_clause} ORDER BY `{$orderby}` {$order} LIMIT %d OFFSET %d",
-				array_merge( $params, array( $per_page, $offset ) )
+				array_merge( $params, [ $per_page, $offset ] )
 			);
 		} else {
 			$wpar_sql = $wpdb->prepare(
@@ -190,17 +199,17 @@ class Repository {
 	 * @param  array<string, mixed> $args Stessi argomenti di get_list.
 	 * @return int
 	 */
-	public function count( array $args = array() ): int {
+	public function count( array $args = [] ): int {
 		global $wpdb;
 
-		$defaults = array(
+		$defaults = [
 			'status'  => '',
 			'form_id' => 0,
-		);
+		];
 		$args     = wp_parse_args( $args, $defaults );
 
-		$where  = array( '1=1' );
-		$params = array();
+		$where  = [ '1=1' ];
+		$params = [];
 		$table  = self::table_name();
 
 		if ( ! empty( $args['status'] ) ) {

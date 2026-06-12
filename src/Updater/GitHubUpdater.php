@@ -9,18 +9,31 @@ declare( strict_types=1 );
 
 namespace Mavida\AlpineBitsReservation\Updater;
 
-use Mavida\AlpineBitsReservation\Settings\Options;
-
 /**
  * Classe GitHubUpdater.
  *
  * Integra yahnis-elsts/plugin-update-checker per il controllo e l'installazione
  * degli aggiornamenti a partire dai tag/release pubblicati sul repository GitHub pubblico.
  *
+ * Owner e repo sono fissi nel codice (non configurabili dall'admin).
  * Il package è richiesto via Composer; se la classe non è disponibile, il metodo
  * register() torna senza fare nulla.
  */
 class GitHubUpdater {
+
+	/**
+	 * Proprietario del repository GitHub.
+	 *
+	 * @var string
+	 */
+	const GITHUB_OWNER = 'mavidasnc';
+
+	/**
+	 * Nome del repository GitHub.
+	 *
+	 * @var string
+	 */
+	const GITHUB_REPO = 'wp-alpinebits-reservation';
 
 	/**
 	 * Registra il controllo aggiornamenti.
@@ -33,16 +46,9 @@ class GitHubUpdater {
 			return;
 		}
 
-		$owner = Options::github_owner();
-		$repo  = Options::github_repo();
-
-		if ( '' === $owner || '' === $repo ) {
-			return;
-		}
-
 		$update_checker = \YahnisElsts\PluginUpdateChecker\v5\PucFactory::buildUpdateChecker(
-			"https://github.com/{$owner}/{$repo}/",
-			WPAR_PLUGIN_FILE,
+			'https://github.com/' . self::GITHUB_OWNER . '/' . self::GITHUB_REPO . '/',
+			\WPAR_PLUGIN_FILE,
 			'wp-alpinebits-reservation'
 		);
 

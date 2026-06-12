@@ -131,6 +131,7 @@ class MappingTab {
 						$notes        = $field['notes'] ?? '';
 						$enum_values  = $field['enum'] ?? array();
 						$mapped_value = $current_map[ $path ] ?? '';
+						$is_mapped    = '' !== $mapped_value;
 
 						// Determina se il valore attuale è una costante.
 						$is_const       = str_starts_with( $mapped_value, '__const:' );
@@ -138,7 +139,7 @@ class MappingTab {
 						$selected_field = $is_const ? '__const' : $mapped_value;
 						$input_name     = 'wpar_mapping[' . esc_attr( $path ) . ']';
 						?>
-						<tr class="wpar-mapping-row<?php echo $required ? ' wpar-required' : ''; ?>" data-path="<?php echo esc_attr( $path ); ?>">
+						<tr class="wpar-mapping-row<?php echo $required ? ' wpar-required' : ''; ?><?php echo $is_mapped ? ' wpar-row-mapped' : ''; ?>" data-path="<?php echo esc_attr( $path ); ?>">
 							<!-- Colonna sinistra: select campo CF7 + input costante -->
 							<td class="wpar-col-source">
 								<select
@@ -192,6 +193,9 @@ class MappingTab {
 									<?php echo esc_html( $label ); ?>
 									<?php if ( $required ) : ?>
 										<span class="wpar-required-star" title="<?php esc_attr_e( 'Campo obbligatorio', 'wp-alpinebits-reservation' ); ?>">*</span>
+									<?php endif; ?>
+									<?php if ( $is_mapped ) : ?>
+										<span class="wpar-mapped-check" title="<?php esc_attr_e( 'Campo mappato', 'wp-alpinebits-reservation' ); ?>">&#10003;</span>
 									<?php endif; ?>
 								</strong>
 								<code class="wpar-field-path"><?php echo esc_html( $path ); ?></code>

@@ -5,8 +5,9 @@
  * 1. Toggle visibilità campo testo per valori costanti nel tab Mapping.
  * 2. Ricarica delle select CF7 al cambio del form nel tab Mapping (AJAX).
  * 3. Pulsante "Testa connessione" nel tab Connessione (AJAX).
- * 4. Pulsante "Reinvia" nel tab Invii (AJAX).
- * 5. Toggle dettaglio riga nel tab Invii.
+ * 4. Pulsante "Controlla aggiornamenti" nel tab Connessione (AJAX).
+ * 5. Pulsante "Reinvia" nel tab Invii (AJAX).
+ * 6. Toggle dettaglio riga nel tab Invii.
  */
 /* global wparAdmin, jQuery */
 (function ( $ ) {
@@ -128,7 +129,58 @@
 	} );
 
 	// -----------------------------------------------------------------------
-	// 4. Reinvio submission
+	// 4. Controlla aggiornamenti
+	// -----------------------------------------------------------------------
+	$( '#wpar-check-version' ).on( 'click', function () {
+		var $btn    = $( this );
+		var $result = $( '#wpar-version-result' );
+
+		$btn.prop( 'disabled', true ).text( i18n.versionChecking );
+		$result.html( '' );
+
+		$.post(
+			ajax,
+			{ action: 'wpar_check_version', nonce: nonce },
+			function ( response ) {
+				$btn.prop( 'disabled', false ).text( 'Controlla aggiornamenti' );
+
+				if ( ! response.success ) {
+					$result.html(
+						'<span class="wpar-msg wpar-msg--fail">'
+						+ escHtml( ( response.data && response.data.message ) || i18n.versionError )
+						+ '</span>'
+					);
+					return;
+				}
+
+				var data = response.data;
+
+				if ( data.update_available ) {
+					var html = '<span class="wpar-version-available">'
+						+ escHtml( i18n.versionAvailable ) + ' v' + escHtml( data.latest_version )
+						+ '</span>';
+
+					if ( data.update_url ) {
+						html += ' <a href="' + escAttr( data.update_url ) + '" class="button button-primary wpar-update-link">'
+							+ escHtml( i18n.versionUpdate )
+							+ '</a>';
+					}
+
+					$result.html( html );
+				} else {
+					$result.html(
+						'<span class="wpar-version-ok">' + escHtml( i18n.versionUpToDate ) + '</span>'
+					);
+				}
+			}
+		).fail( function () {
+			$btn.prop( 'disabled', false ).text( 'Controlla aggiornamenti' );
+			$result.html( '<span class="wpar-msg wpar-msg--fail">' + escHtml( i18n.versionError ) + '</span>' );
+		} );
+	} );
+
+	// -----------------------------------------------------------------------
+	// 5. Reinvio submission
 	// -----------------------------------------------------------------------
 	$( document ).on( 'click', '.wpar-resend-btn', function () {
 		var $btn   = $( this );
@@ -189,7 +241,7 @@
 	} );
 
 	// -----------------------------------------------------------------------
-	// 5. Toggle dettaglio riga
+	// 6. Toggle dettaglio riga
 	// -----------------------------------------------------------------------
 	$( document ).on( 'click', '.wpar-toggle-detail', function () {
 		var targetId = $( this ).data( 'target' );
@@ -197,7 +249,7 @@
 	} );
 
 	// -----------------------------------------------------------------------
-	// 6. Seleziona/deseleziona tutti (tab Moduli)
+	// 7. Seleziona/deseleziona tutti (tab Moduli)
 	// -----------------------------------------------------------------------
 	$( '#wpar-select-all-forms' ).on( 'change', function () {
 		var checked = $( this ).prop( 'checked' );

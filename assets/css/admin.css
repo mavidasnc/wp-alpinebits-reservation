@@ -246,3 +246,44 @@
 
 .wpar-msg--ok    { background: #d1e7dd; color: #0a3622; }
 .wpar-msg--fail  { background: #f8d7da; color: #58151c; }
+
+/* --- Mapping: righe mappate -------------------------------------------- */
+.wpar-row-mapped {
+    background-color: #f0faf0 !important;
+}
+
+.wpar-mapped-check {
+    color: #00a32a;
+    font-size: 15px;
+    font-weight: bold;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+/* --- Tab Notifiche: tabella placeholder --------------------------------- */
+.wpar-placeholder-table {
+    margin-top: 8px;
+}
+
+.wpar-placeholder-table code {
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 12px;
+}
+
+/* --- Versione: risultato check aggiornamenti --------------------------- */
+#wpar-version-result .wpar-version-available {
+    color: #d63638;
+    font-weight: 600;
+}
+
+#wpar-version-result .wpar-version-ok {
+    color: #00a32a;
+    font-weight: 600;
+}
+
+#wpar-version-result .wpar-update-link {
+    margin-left: 8px;
+}

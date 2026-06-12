@@ -51,16 +51,22 @@ final class Plugin {
 	 * @return void
 	 */
 	public function boot(): void {
+		// Migrazione DB incrementale: eseguita solo se la versione è cambiata.
+		if ( get_option( Activator::DB_VERSION_OPTION ) !== Activator::DB_VERSION ) {
+			Activator::maybe_upgrade();
+		}
+
 		// Carica le traduzioni del plugin.
 		load_plugin_textdomain(
 			'wp-alpinebits-reservation',
 			false,
-			dirname( WPAR_PLUGIN_BASENAME ) . '/languages'
+			dirname( \WPAR_PLUGIN_BASENAME ) . '/languages'
 		);
 
 		// Inizializza il pannello di amministrazione.
 		if ( is_admin() ) {
 			( new AdminMenu() )->register();
+			$this->register_action_links();
 		}
 
 		// Registra il listener per le submission CF7.
@@ -68,5 +74,27 @@ final class Plugin {
 
 		// Inizializza l'updater GitHub.
 		( new GitHubUpdater() )->register();
+	}
+
+	/**
+	 * Aggiunge i link "Impostazioni" e "GitHub" nella riga del plugin nella lista plugin WP.
+	 *
+	 * @return void
+	 */
+	private function register_action_links(): void {
+		add_filter(
+			'plugin_action_links_' . \WPAR_PLUGIN_BASENAME,
+			static function ( array $links ): array {
+				$custom = [
+					'<a href="' . esc_url( admin_url( 'admin.php?page=wp-alpinebits-reservation' ) ) . '">'
+						. esc_html__( 'Impostazioni', 'wp-alpinebits-reservation' )
+						. '</a>',
+					'<a href="https://github.com/' . GitHubUpdater::GITHUB_OWNER . '/' . GitHubUpdater::GITHUB_REPO . '" target="_blank" rel="noopener noreferrer">'
+						. esc_html__( 'GitHub', 'wp-alpinebits-reservation' )
+						. '</a>',
+				];
+				return array_merge( $custom, $links );
+			}
+		);
 	}
 }

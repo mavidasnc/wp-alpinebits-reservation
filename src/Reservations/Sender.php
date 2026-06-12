@@ -11,11 +11,12 @@ namespace Mavida\AlpineBitsReservation\Reservations;
 
 use Mavida\AlpineBitsReservation\Api\Client;
 use Mavida\AlpineBitsReservation\Mapping\FieldMapper;
+use Mavida\AlpineBitsReservation\Notifications\Notifier;
 
 /**
  * Classe Sender.
  *
- * Coordinazione tra FieldMapper, Repository e Api\Client.
+ * Coordinazione tra FieldMapper, Repository, Api\Client e Notifier.
  * Usata sia dal SubmissionListener (nuovo invio) che dal pannello admin (reinvio).
  */
 class Sender {
@@ -38,7 +39,8 @@ class Sender {
 		}
 
 		$repository = new Repository();
-		$row_id     = $repository->insert( $form_id, (string) $payload['externalid'], $payload );
+		// Salva anche i dati CF7 originali per le notifiche e il reinvio.
+		$row_id = $repository->insert( $form_id, (string) $payload['externalid'], $payload, $posted_data );
 
 		if ( 0 === $row_id ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
@@ -58,6 +60,10 @@ class Sender {
 			$api_response->raw_body,
 			$api_response->remote_id
 		);
+
+		// Invia notifica email (solo se configurata).
+		$event = $api_response->success ? Notifier::EVENT_SEND_SUCCESS : Notifier::EVENT_SEND_ERROR;
+		( new Notifier() )->send( $event, $form_id, $posted_data, $api_response, (string) $payload['externalid'] );
 
 		return $row_id;
 	}
@@ -105,6 +111,21 @@ class Sender {
 			$api_response->raw_body,
 			$api_response->remote_id
 		);
+
+		// Invia notifica email per il reinvio riuscito.
+		if ( $api_response->success ) {
+			$cf7_data = ! empty( $row->cf7_data )
+				? ( json_decode( $row->cf7_data, true ) ?? [] )
+				: [];
+
+			( new Notifier() )->send(
+				Notifier::EVENT_RESEND_SUCCESS,
+				(int) $row->form_id,
+				$cf7_data,
+				$api_response,
+				(string) $row->externalid
+			);
+		}
 
 		return $api_response->success;
 	}

@@ -7,6 +7,27 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-12
+
+### Aggiunto
+- Tab **Notifiche**: configurazione email con indirizzo destinatario, oggetto e corpo con placeholder `{field_name}`; allegato automatico JSON con tutti i dati CF7; abilitazione separata per successo, errore e reinvio.
+- Classe `Notifications\Notifier` per invio email tramite `wp_mail()` con allegato JSON temporaneo.
+- Classe `Updater\VersionChecker` per la verifica manuale della versione più recente via API GitHub Releases.
+- Pulsante **Controlla aggiornamenti** nel tab Connessione con risposta AJAX: mostra versione disponibile e link diretto alla schermata di aggiornamento WP standard.
+- **Spunta verde** (✓) affianco a ogni campo già mappato nel tab Mapping; sfondo verde tenue sulla riga.
+- Link **Impostazioni** e **GitHub** nella riga del plugin nell'elenco plugin WordPress (filtro `plugin_action_links_`).
+- Migrazione DB automatica v1.0 → v1.1: aggiunta colonna `cf7_data LONGTEXT NULL` per conservare i dati CF7 originali (usati nelle notifiche di reinvio).
+- Metodo `Activator::maybe_upgrade()` per migrazioni incrementali eseguito a ogni avvio del plugin.
+
+### Modificato
+- `GitHubUpdater`: owner e repo hardcoded come costanti di classe (`GITHUB_OWNER`, `GITHUB_REPO`); rimossa dipendenza da `Options`.
+- `ConnectionTab`: rimossa la sezione "Aggiornamenti GitHub" (owner/repo non più configurabili dall'admin); aggiunta sezione "Versione plugin e aggiornamenti".
+- `Options`: rimossi i metodi `github_owner()` e `github_repo()`; aggiunti `notifications()` e `save_notifications()`; semplificati i default (rimossi `github_owner`/`github_repo`).
+- `Plugin::boot()`: aggiunto controllo versione DB per le migrazioni; registrazione filtro `plugin_action_links_`.
+- `Sender::send()`: i dati CF7 originali vengono ora salvati in `cf7_data` e passati a `Notifier`.
+- `Sender::resend()`: chiama `Notifier` in caso di reinvio riuscito con i dati CF7 recuperati dal DB.
+- `AdminMenu`: aggiunto tab Notifiche e handler AJAX `wpar_check_version`.
+
 ## [0.1.0] - 2026-06-12
 
 ### Aggiunto
@@ -26,5 +47,6 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/releases/tag/v0.1.0
