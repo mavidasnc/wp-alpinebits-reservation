@@ -1,0 +1,9 @@
+# Forza LF per tutti i file di testo nel repository.
+* text=auto eol=lf
+
+# File binari: nessuna conversione.
+*.png binary
+*.jpg binary
+*.gif binary
+*.ico binary
+*.zip binary

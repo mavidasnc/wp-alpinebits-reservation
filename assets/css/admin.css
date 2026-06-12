@@ -1,0 +1,248 @@
+/* ==========================================================================
+   WP AlpineBits Reservation — Admin styles
+   ========================================================================== */
+
+/* --- Header pagina ---------------------------------------------------- */
+.wpar-wrap h1 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.wpar-version {
+    font-size: 13px;
+    font-weight: normal;
+    color: #757575;
+    background: #f0f0f1;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    padding: 2px 8px;
+}
+
+.wpar-tab-content {
+    margin-top: 20px;
+}
+
+/* --- Badge stato ------------------------------------------------------- */
+.wpar-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.wpar-badge--active,
+.wpar-badge--success {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+
+.wpar-badge--inactive,
+.wpar-badge--pending {
+    background: #f0f0f1;
+    color: #50575e;
+}
+
+.wpar-badge--error {
+    background: #f8d7da;
+    color: #58151c;
+}
+
+/* --- Tab Mapping ------------------------------------------------------- */
+.wpar-form-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+}
+
+.wpar-form-selector select {
+    min-width: 250px;
+}
+
+.wpar-group-title {
+    background: #f0f6fc;
+    border-left: 4px solid #2271b1;
+    padding: 6px 12px;
+    margin: 24px 0 0;
+    font-size: 14px;
+}
+
+.wpar-mapping-table {
+    table-layout: fixed;
+}
+
+.wpar-mapping-table .wpar-col-source {
+    width: 40%;
+}
+
+.wpar-mapping-table .wpar-col-arrow {
+    width: 40px;
+    text-align: center;
+    font-size: 18px;
+    color: #757575;
+}
+
+.wpar-mapping-table .wpar-col-target {
+    width: 55%;
+}
+
+.wpar-field-label {
+    display: block;
+    margin-bottom: 2px;
+}
+
+.wpar-required-label {
+    color: #1d2327;
+}
+
+.wpar-required-star {
+    color: #d63638;
+    margin-left: 3px;
+}
+
+.wpar-field-path {
+    display: inline-block;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-size: 11px;
+    color: #50575e;
+    margin: 2px 0;
+}
+
+.wpar-field-type {
+    font-size: 11px;
+    color: #757575;
+    margin-left: 6px;
+}
+
+.wpar-source-select {
+    width: 100%;
+    max-width: 100%;
+}
+
+.wpar-const-wrap input,
+.wpar-const-wrap select {
+    width: 100%;
+}
+
+.wpar-required td {
+    border-left: 3px solid #ffb900;
+}
+
+/* --- Tab Log ----------------------------------------------------------- */
+.wpar-log-filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: #f6f7f7;
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    flex-wrap: wrap;
+}
+
+.wpar-log-count {
+    color: #50575e;
+    font-style: italic;
+    margin-bottom: 10px;
+}
+
+.wpar-log-table .wpar-col-id {
+    width: 50px;
+}
+
+.wpar-log-table .wpar-col-http {
+    width: 60px;
+}
+
+.wpar-log-table .wpar-col-attempts {
+    width: 80px;
+}
+
+.wpar-detail-row td {
+    padding: 0 !important;
+    border-top: none !important;
+}
+
+.wpar-detail-wrap {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    background: #fafafa;
+    border-top: 1px solid #f0f0f1;
+    border-bottom: 2px solid #2271b1;
+    flex-wrap: wrap;
+}
+
+.wpar-detail-col {
+    flex: 1;
+    min-width: 300px;
+}
+
+.wpar-detail-col strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #50575e;
+}
+
+.wpar-json {
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 12px;
+    border-radius: 4px;
+    overflow-x: auto;
+    max-height: 350px;
+    overflow-y: auto;
+    white-space: pre;
+    margin: 0;
+}
+
+/* --- Paginazione ------------------------------------------------------- */
+.wpar-pagination {
+    margin-top: 16px;
+}
+
+/* --- Spinner ----------------------------------------------------------- */
+.wpar-spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 3px solid #f0f0f1;
+    border-top-color: #2271b1;
+    border-radius: 50%;
+    animation: wpar-spin 0.6s linear infinite;
+    vertical-align: middle;
+}
+
+@keyframes wpar-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* --- Messaggi inline -------------------------------------------------- */
+.wpar-msg {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.wpar-msg--ok    { background: #d1e7dd; color: #0a3622; }
+.wpar-msg--fail  { background: #f8d7da; color: #58151c; }

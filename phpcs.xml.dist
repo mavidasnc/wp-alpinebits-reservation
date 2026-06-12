@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<ruleset name="WP AlpineBits Reservation">
+    <description>WordPress Coding Standards per wp-alpinebits-reservation</description>
+
+    <!-- Scansiona solo la cartella src e il file bootstrap -->
+    <file>src/</file>
+    <file>wp-alpinebits-reservation.php</file>
+
+    <!-- Esclude la cartella vendor -->
+    <exclude-pattern>*/vendor/*</exclude-pattern>
+    <exclude-pattern>*/node_modules/*</exclude-pattern>
+
+    <!-- Regoleset principale -->
+    <rule ref="WordPress-Extra">
+        <!-- Permette short array syntax -->
+        <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
+        <!--
+            PSR-4 autoloading richiede nomi file PascalCase corrispondenti alla classe.
+            La naming convention WordPress (class-*.php, lowercase-hyphens) è incompatibile
+            con PSR-4; disabilitiamo questa regola per la cartella src/.
+        -->
+        <exclude name="WordPress.Files.FileName"/>
+    </rule>
+
+    <!-- Standard aggiuntivi -->
+    <rule ref="WordPress-Docs"/>
+
+    <!-- Compatibilità PHP 8.1+ -->
+    <config name="testVersion" value="8.1-"/>
+
+    <!-- Impostazioni WordPress -->
+    <config name="minimum_wp_version" value="6.5"/>
+
+    <!-- Prefisso obbligatorio per funzioni/classi globali -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <properties>
+            <property name="prefixes" type="array">
+                <element value="wpar"/>
+                <element value="Mavida\AlpineBitsReservation"/>
+            </property>
+        </properties>
+    </rule>
+
+    <!-- Text domain corretto -->
+    <rule ref="WordPress.WP.I18n">
+        <properties>
+            <property name="text_domain" type="array">
+                <element value="wp-alpinebits-reservation"/>
+            </property>
+        </properties>
+    </rule>
+</ruleset>
