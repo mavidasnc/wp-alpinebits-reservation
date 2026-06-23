@@ -7,6 +7,11 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-06-23
+
+### Aggiunto
+- **Campi extra → commento**: nuovo gruppo schema "Informazioni aggiuntive (→ commento)" con 4 campi mappabili — `_extra.inpiazzola`, `_extra.lunghezza`, `_extra.inpiazzola2`, `_extra.lunghezza2`. I valori vengono formattati come `Piazzola 1: x`, `Lunghezza 1: y`, ecc. e accodati al campo `comment` del payload (separati da `\n`). Se `comment` è già mappato, il testo extra viene aggiunto dopo; se non è mappato, diventa il commento stesso. I path `_extra.*` non vengono mai inviati all'API.
+
 ## [0.3.1] - 2026-06-23
 
 ### Aggiunto
@@ -94,7 +99,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...v0.2.4

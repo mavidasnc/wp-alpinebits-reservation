@@ -82,6 +82,34 @@ class FieldMapper {
 			}
 		}
 
+		// Appende i campi extra (_extra.*) al campo comment.
+		// I path _extra.* non esistono nell'API: vengono formattati come testo e accodati al commento.
+		if ( isset( $payload['_extra'] ) && is_array( $payload['_extra'] ) ) {
+			$extra_data = $payload['_extra'];
+			unset( $payload['_extra'] );
+
+			$label_map = array(
+				'inpiazzola'  => 'Piazzola 1',
+				'lunghezza'   => 'Lunghezza 1',
+				'inpiazzola2' => 'Piazzola 2',
+				'lunghezza2'  => 'Lunghezza 2',
+			);
+
+			$extra_lines = array();
+			foreach ( $label_map as $key => $label ) {
+				if ( isset( $extra_data[ $key ] ) && '' !== $extra_data[ $key ] ) {
+					$extra_lines[] = $label . ': ' . $extra_data[ $key ];
+				}
+			}
+
+			if ( ! empty( $extra_lines ) ) {
+				$extra_text         = implode( "\n", $extra_lines );
+				$payload['comment'] = isset( $payload['comment'] ) && '' !== $payload['comment']
+					? $payload['comment'] . "\n" . $extra_text
+					: $extra_text;
+			}
+		}
+
 		// Garantisce externalid: se non mappato, lo genera il Sender.
 		return $payload;
 	}

@@ -34,6 +34,7 @@ class ApiSchema {
 	const GROUP_ROOM        = 'Camera 1';
 	const GROUP_ROOM_2      = 'Camera 2';
 	const GROUP_RATES       = 'Tariffe (camere)';
+	const GROUP_EXTRA       = 'Informazioni aggiuntive (→ commento)';
 	const GROUP_SERVICES    = 'Servizi';
 	const GROUP_MARKETING   = 'Marketing';
 
@@ -257,6 +258,35 @@ class ApiSchema {
 				'group'    => self::GROUP_RATES,
 				'label'    => __( 'Totale camera (tutte le camere)', 'wp-alpinebits-reservation' ),
 				'notes'    => __( 'Il valore verrà applicato automaticamente a tutte le camere mappate.', 'wp-alpinebits-reservation' ),
+			),
+			// --- Informazioni aggiuntive (aggiunte al campo "comment") ---
+			array(
+				'path'  => '_extra.inpiazzola',
+				'type'  => 'string',
+				'group' => self::GROUP_EXTRA,
+				'label' => __( 'Tipo piazzola 1', 'wp-alpinebits-reservation' ),
+				'notes' => __( 'Aggiunto automaticamente al campo Commento come "Piazzola 1: [valore]".', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'  => '_extra.lunghezza',
+				'type'  => 'string',
+				'group' => self::GROUP_EXTRA,
+				'label' => __( 'Lunghezza camper 1', 'wp-alpinebits-reservation' ),
+				'notes' => __( 'Aggiunto automaticamente al campo Commento come "Lunghezza 1: [valore]".', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'  => '_extra.inpiazzola2',
+				'type'  => 'string',
+				'group' => self::GROUP_EXTRA,
+				'label' => __( 'Tipo piazzola 2', 'wp-alpinebits-reservation' ),
+				'notes' => __( 'Aggiunto automaticamente al campo Commento come "Piazzola 2: [valore]".', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'  => '_extra.lunghezza2',
+				'type'  => 'string',
+				'group' => self::GROUP_EXTRA,
+				'label' => __( 'Lunghezza camper 2', 'wp-alpinebits-reservation' ),
+				'notes' => __( 'Aggiunto automaticamente al campo Commento come "Lunghezza 2: [valore]".', 'wp-alpinebits-reservation' ),
 			),
 			// --- Marketing ---
 			array(
