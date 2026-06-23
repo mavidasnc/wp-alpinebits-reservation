@@ -69,6 +69,19 @@ class FieldMapper {
 			$payload['rooms'] = array_values( $payload['rooms'] );
 		}
 
+		// Propaga rateplan e total della prima camera a tutte le altre presenti nel payload.
+		// I due campi sono configurati una volta sola nel gruppo "Tariffe (camere)".
+		if ( isset( $payload['rooms'] ) && count( $payload['rooms'] ) > 1 ) {
+			$room0 = $payload['rooms'][0] ?? array();
+			for ( $i = 1, $count = count( $payload['rooms'] ); $i < $count; $i++ ) {
+				foreach ( array( 'rateplan', 'total' ) as $shared_key ) {
+					if ( isset( $room0[ $shared_key ] ) && ! isset( $payload['rooms'][ $i ][ $shared_key ] ) ) {
+						$payload['rooms'][ $i ][ $shared_key ] = $room0[ $shared_key ];
+					}
+				}
+			}
+		}
+
 		// Garantisce externalid: se non mappato, lo genera il Sender.
 		return $payload;
 	}

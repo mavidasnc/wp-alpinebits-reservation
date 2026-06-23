@@ -7,6 +7,16 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-06-23
+
+### Aggiunto
+- **Gruppo "Tariffe (camere)"**: `rooms.0.rateplan` (Piano tariffario) e `rooms.0.total` (Totale camera) spostati in una sezione dedicata, separata visivamente dai gruppi Camera 1/2. Il valore mappato viene propagato automaticamente da `FieldMapper` a tutte le camere presenti nel payload — non è necessario configurarli due volte.
+- **Tag input per la raccolta multi-campo**: sostituisce il `<select multiple>` con una UI a pill/tag. I campi già selezionati appaiono come tag rimovibili (×), la dropdown per aggiungerne altri è su una riga separata. La UI è costruita interamente in JS (vanilla + jQuery) senza dipendenze esterne.
+
+### Modificato
+- `ApiSchema`: rimossi `rooms.0.rateplan` e `rooms.0.total` dal gruppo Camera 1; aggiunti nel nuovo gruppo `GROUP_RATES = 'Tariffe (camere)'` con label aggiornate e note esplicative.
+- `FieldMapper::build()`: dopo `array_values($rooms)`, propaga automaticamente `rateplan` e `total` da `rooms[0]` a tutte le camere successive presenti nel payload.
+
 ## [0.3.0] - 2026-06-23
 
 ### Aggiunto
@@ -84,7 +94,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...v0.2.3

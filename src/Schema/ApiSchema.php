@@ -33,6 +33,7 @@ class ApiSchema {
 	const GROUP_GUEST       = 'Ospite';
 	const GROUP_ROOM        = 'Camera 1';
 	const GROUP_ROOM_2      = 'Camera 2';
+	const GROUP_RATES       = 'Tariffe (camere)';
 	const GROUP_SERVICES    = 'Servizi';
 	const GROUP_MARKETING   = 'Marketing';
 
@@ -201,20 +202,6 @@ class ApiSchema {
 				'notes'    => __( 'Obbligatorio se status = "reservation".', 'wp-alpinebits-reservation' ),
 			),
 			array(
-				'path'     => 'rooms.0.rateplan',
-				'type'     => 'string',
-				'required' => false,
-				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera 1: Piano tariffario', 'wp-alpinebits-reservation' ),
-			),
-			array(
-				'path'     => 'rooms.0.total',
-				'type'     => 'float',
-				'required' => false,
-				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera 1: Totale camera', 'wp-alpinebits-reservation' ),
-			),
-			array(
 				'path'     => 'rooms.0.occupants.adults',
 				'type'     => 'int',
 				'required' => false,
@@ -253,6 +240,23 @@ class ApiSchema {
 				'group'    => self::GROUP_ROOM_2,
 				'label'    => __( 'Camera 2: Età bambini', 'wp-alpinebits-reservation' ),
 				'notes'    => __( 'Seleziona "Raccolta multi-campo" e scegli i campi CF7 delle età della seconda camera.', 'wp-alpinebits-reservation' ),
+			),
+			// --- Tariffe (camere) ---
+			array(
+				'path'     => 'rooms.0.rateplan',
+				'type'     => 'string',
+				'required' => false,
+				'group'    => self::GROUP_RATES,
+				'label'    => __( 'Piano tariffario (tutte le camere)', 'wp-alpinebits-reservation' ),
+				'notes'    => __( 'Il valore verrà applicato automaticamente a tutte le camere mappate.', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'     => 'rooms.0.total',
+				'type'     => 'float',
+				'required' => false,
+				'group'    => self::GROUP_RATES,
+				'label'    => __( 'Totale camera (tutte le camere)', 'wp-alpinebits-reservation' ),
+				'notes'    => __( 'Il valore verrà applicato automaticamente a tutte le camere mappate.', 'wp-alpinebits-reservation' ),
 			),
 			// --- Marketing ---
 			array(

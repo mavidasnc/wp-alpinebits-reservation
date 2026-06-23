@@ -33,6 +33,10 @@
 		} else if ( val === '__collect' ) {
 			$constWrap.hide();
 			$collectWrap.show();
+			// Inizializza la UI tag se non ancora costruita.
+			if ( $collectWrap.length && ! $collectWrap.find( '.wpar-tags-list' ).length ) {
+				initCollectUI( $collectWrap );
+			}
 		} else {
 			$constWrap.hide();
 			$constWrap.find( '.wpar-const-input' ).val( '' );
@@ -106,11 +110,12 @@
 					if ( $sel.val() !== '__collect' ) { $collectWrap.hide(); }
 				} );
 
-				// Ricostruisce i multi-select per la raccolta (array_int).
-				$wrap.find( '.wpar-collect-select' ).each( function () {
-					var $msel       = $( this );
-					var currentVals = $msel.val() || [];
-					var options     = '';
+				// Ricostruisce i tag input per la raccolta (array_int).
+				$wrap.find( '.wpar-collect-wrap' ).each( function () {
+					var $collectWrap = $( this );
+					var $hidden      = $collectWrap.find( '.wpar-collect-select' );
+					var currentVals  = $hidden.val() || [];
+					var options      = '';
 
 					$.each( fields, function ( name, label ) {
 						var selected = currentVals.indexOf( name ) !== -1 ? ' selected' : '';
@@ -119,7 +124,8 @@
 							+ '</option>';
 					} );
 
-					$msel.html( options );
+					$hidden.html( options );
+					initCollectUI( $collectWrap );
 				} );
 
 				$spinner.hide();
@@ -286,6 +292,94 @@
 	$( '#wpar-select-all-forms' ).on( 'change', function () {
 		var checked = $( this ).prop( 'checked' );
 		$( '.wpar-form-checkbox' ).prop( 'checked', checked );
+	} );
+
+	// -----------------------------------------------------------------------
+	// 8. Tag input per la raccolta multi-campo (array_int)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Inizializza (o re-inizializza) la UI a tag per un .wpar-collect-wrap.
+	 * Legge i valori già selezionati dal hidden select e costruisce:
+	 *   .wpar-tags-list  → riga con un tag per ogni campo già scelto
+	 *   .wpar-tags-add   → riga separata con la dropdown per aggiungere nuovi campi
+	 */
+	function initCollectUI( $wrap ) {
+		var $hidden = $wrap.find( '.wpar-collect-select' );
+
+		// Rimuove eventuale UI precedente (per re-init dopo AJAX).
+		$wrap.find( '.wpar-tags-list, .wpar-tags-add' ).remove();
+
+		// Lista tag dai valori selezionati.
+		var $tagsList = $( '<div class="wpar-tags-list"></div>' );
+		$hidden.find( 'option' ).each( function () {
+			if ( $( this ).prop( 'selected' ) ) {
+				$tagsList.append( makeTag( $( this ).val(), $( this ).text() ) );
+			}
+		} );
+
+		// Dropdown con i campi non ancora selezionati (riga separata).
+		var $addRow   = $( '<div class="wpar-tags-add"></div>' );
+		var $dropdown = $( '<select class="wpar-tags-dropdown"></select>' );
+		$dropdown.append( $( '<option>', { value: '', text: i18n.addField || '+ Aggiungi campo...' } ) );
+		$hidden.find( 'option' ).each( function () {
+			if ( ! $( this ).prop( 'selected' ) ) {
+				$dropdown.append( $( '<option>', { value: $( this ).val(), text: $( this ).text() } ) );
+			}
+		} );
+		$addRow.append( $dropdown );
+
+		$hidden.before( $tagsList ).before( $addRow );
+	}
+
+	/** Crea un elemento tag (pill) per il campo specificato. */
+	function makeTag( val, label ) {
+		return $( '<span class="wpar-tag"></span>' )
+			.attr( 'data-value', val )
+			.append( $( '<span class="wpar-tag-label"></span>' ).text( label ) )
+			.append(
+				$( '<button type="button" class="wpar-tag-remove">&times;</button>' )
+					.attr( 'data-value', String( val ) )
+					.attr( 'aria-label', 'Rimuovi' )
+			);
+	}
+
+	// Inizializza tutti i collect-wrap al caricamento della pagina.
+	$( '.wpar-collect-wrap' ).each( function () {
+		initCollectUI( $( this ) );
+	} );
+
+	// Aggiunge un campo tramite la dropdown.
+	$( document ).on( 'change', '.wpar-tags-dropdown', function () {
+		var val = $( this ).val();
+		if ( ! val ) {
+			return;
+		}
+
+		var $dropdown = $( this );
+		var $wrap     = $dropdown.closest( '.wpar-collect-wrap' );
+		var $hidden   = $wrap.find( '.wpar-collect-select' );
+		var $tagsList = $wrap.find( '.wpar-tags-list' );
+		var label     = $dropdown.find( 'option:selected' ).text();
+
+		$tagsList.append( makeTag( val, label ) );
+		$hidden.find( 'option[value="' + escAttr( val ) + '"]' ).prop( 'selected', true );
+		$dropdown.find( 'option[value="' + escAttr( val ) + '"]' ).remove();
+		$dropdown.val( '' );
+	} );
+
+	// Rimuove un campo tramite il pulsante ×.
+	$( document ).on( 'click', '.wpar-tag-remove', function () {
+		var val       = String( $( this ).data( 'value' ) );
+		var $tag      = $( this ).closest( '.wpar-tag' );
+		var $wrap     = $tag.closest( '.wpar-collect-wrap' );
+		var $hidden   = $wrap.find( '.wpar-collect-select' );
+		var $dropdown = $wrap.find( '.wpar-tags-dropdown' );
+		var $opt      = $hidden.find( 'option[value="' + escAttr( val ) + '"]' );
+
+		$opt.prop( 'selected', false );
+		$dropdown.append( $( '<option>', { value: val, text: $opt.text() } ) );
+		$tag.remove();
 	} );
 
 	// -----------------------------------------------------------------------

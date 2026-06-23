@@ -174,14 +174,15 @@ class MappingTab {
 									<?php endif; ?>
 								</select>
 
-								<!-- Multi-select per raccolta di più campi CF7 (solo per array_int) -->
+								<!-- Raccolta multi-campo (solo per array_int).
+									La UI visiva (tag + dropdown) è costruita da JavaScript via initCollectUI(). -->
 								<?php if ( 'array_int' === $type ) : ?>
 									<div class="wpar-collect-wrap" style="<?php echo $is_collect ? '' : 'display:none;'; ?> margin-top:6px;">
 										<select
 											name="<?php echo esc_attr( $input_name ); ?>[collect][]"
 											class="wpar-collect-select"
 											multiple
-											size="5"
+											style="display:none;"
 										>
 											<?php foreach ( $form_fields as $cf7_name => $cf7_label ) : ?>
 												<option
@@ -192,9 +193,6 @@ class MappingTab {
 												</option>
 											<?php endforeach; ?>
 										</select>
-										<p class="description" style="margin-top:4px; font-size:11px;">
-											<?php esc_html_e( 'Tieni premuto Ctrl (o Cmd su Mac) per selezionare più campi. L\'ordine di selezione determina l\'ordine nell\'array.', 'wp-alpinebits-reservation' ); ?>
-										</p>
 									</div>
 								<?php endif; ?>
 
