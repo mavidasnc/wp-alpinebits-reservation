@@ -56,11 +56,16 @@ final class Plugin {
 			Activator::maybe_upgrade();
 		}
 
-		// Carica le traduzioni del plugin.
-		load_plugin_textdomain(
-			'wp-alpinebits-reservation',
-			false,
-			dirname( \WPAR_PLUGIN_BASENAME ) . '/languages'
+		// Carica le traduzioni su `init` come richiesto da WP 6.7+.
+		add_action(
+			'init',
+			static function (): void {
+				load_plugin_textdomain(
+					'wp-alpinebits-reservation',
+					false,
+					dirname( \WPAR_PLUGIN_BASENAME ) . '/languages'
+				);
+			}
 		);
 
 		// Inizializza il pannello di amministrazione.

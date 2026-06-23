@@ -41,16 +41,27 @@ class AdminMenu {
 	private array $tabs = [];
 
 	/**
-	 * Inizializza le istanze dei tab.
+	 * Costruttore vuoto: le label dei tab sono inizializzate in modo lazy
+	 * tramite get_tabs() per evitare chiamate a __() prima dell'hook `init` (WP 6.7+).
 	 */
-	public function __construct() {
-		$this->tabs = [
-			'connection'    => __( 'Connessione', 'wp-alpinebits-reservation' ),
-			'forms'         => __( 'Moduli', 'wp-alpinebits-reservation' ),
-			'mapping'       => __( 'Mapping', 'wp-alpinebits-reservation' ),
-			'notifications' => __( 'Notifiche', 'wp-alpinebits-reservation' ),
-			'log'           => __( 'Invii', 'wp-alpinebits-reservation' ),
-		];
+	public function __construct() {}
+
+	/**
+	 * Restituisce la mappa slug => label dei tab, inizializzandola al primo accesso.
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_tabs(): array {
+		if ( empty( $this->tabs ) ) {
+			$this->tabs = [
+				'connection'    => __( 'Connessione', 'wp-alpinebits-reservation' ),
+				'forms'         => __( 'Moduli', 'wp-alpinebits-reservation' ),
+				'mapping'       => __( 'Mapping', 'wp-alpinebits-reservation' ),
+				'notifications' => __( 'Notifiche', 'wp-alpinebits-reservation' ),
+				'log'           => __( 'Invii', 'wp-alpinebits-reservation' ),
+			];
+		}
+		return $this->tabs;
 	}
 
 	/**
@@ -150,7 +161,9 @@ class AdminMenu {
 			? sanitize_key( wp_unslash( $_GET['tab'] ) ) // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			: 'connection';
 
-		if ( ! array_key_exists( $current_tab, $this->tabs ) ) {
+		$tabs = $this->get_tabs();
+
+		if ( ! array_key_exists( $current_tab, $tabs ) ) {
 			$current_tab = 'connection';
 		}
 
@@ -162,7 +175,7 @@ class AdminMenu {
 			</h1>
 
 			<nav class="nav-tab-wrapper">
-				<?php foreach ( $this->tabs as $slug => $label ) : ?>
+				<?php foreach ( $tabs as $slug => $label ) : ?>
 					<a
 						href="<?php echo esc_url( admin_url( 'admin.php?page=' . self::PAGE_SLUG . '&tab=' . $slug ) ); ?>"
 						class="nav-tab<?php echo $slug === $current_tab ? ' nav-tab-active' : ''; ?>"

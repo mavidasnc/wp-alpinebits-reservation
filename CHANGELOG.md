@@ -7,6 +7,11 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.2.3] - 2026-06-23
+
+### Corretto
+- Avviso WordPress 6.7+ "Translation loading triggered too early": `load_plugin_textdomain()` spostato sull'hook `init`; le label dei tab di `AdminMenu` ora vengono inizializzate in modo lazy (al primo accesso dopo `init`) invece che nel costruttore.
+
 ## [0.2.2] - 2026-06-23
 
 ### Aggiunto
@@ -62,7 +67,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...HEAD
+[0.2.3]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.1.0...v0.2.0
