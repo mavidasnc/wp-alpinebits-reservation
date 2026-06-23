@@ -31,7 +31,8 @@ class ApiSchema {
 	 */
 	const GROUP_RESERVATION = 'Prenotazione';
 	const GROUP_GUEST       = 'Ospite';
-	const GROUP_ROOM        = 'Camera';
+	const GROUP_ROOM        = 'Camera 1';
+	const GROUP_ROOM_2      = 'Camera 2';
 	const GROUP_SERVICES    = 'Servizi';
 	const GROUP_MARKETING   = 'Marketing';
 
@@ -190,13 +191,13 @@ class ApiSchema {
 				'group'    => self::GROUP_GUEST,
 				'label'    => __( 'Ospite: Newsletter', 'wp-alpinebits-reservation' ),
 			),
-			// --- Camera (prima camera, v0.1.0: una sola camera supportata) ---
+			// --- Camera 1 ---
 			array(
 				'path'     => 'rooms.0.category',
 				'type'     => 'string',
 				'required' => false,
 				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera: Categoria', 'wp-alpinebits-reservation' ),
+				'label'    => __( 'Camera 1: Categoria', 'wp-alpinebits-reservation' ),
 				'notes'    => __( 'Obbligatorio se status = "reservation".', 'wp-alpinebits-reservation' ),
 			),
 			array(
@@ -204,21 +205,21 @@ class ApiSchema {
 				'type'     => 'string',
 				'required' => false,
 				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera: Piano tariffario', 'wp-alpinebits-reservation' ),
+				'label'    => __( 'Camera 1: Piano tariffario', 'wp-alpinebits-reservation' ),
 			),
 			array(
 				'path'     => 'rooms.0.total',
 				'type'     => 'float',
 				'required' => false,
 				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera: Totale camera', 'wp-alpinebits-reservation' ),
+				'label'    => __( 'Camera 1: Totale camera', 'wp-alpinebits-reservation' ),
 			),
 			array(
 				'path'     => 'rooms.0.occupants.adults',
 				'type'     => 'int',
 				'required' => false,
 				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera: Adulti', 'wp-alpinebits-reservation' ),
+				'label'    => __( 'Camera 1: Adulti', 'wp-alpinebits-reservation' ),
 				'notes'    => __( 'Obbligatorio se status = "reservation".', 'wp-alpinebits-reservation' ),
 			),
 			array(
@@ -226,8 +227,32 @@ class ApiSchema {
 				'type'     => 'array_int',
 				'required' => false,
 				'group'    => self::GROUP_ROOM,
-				'label'    => __( 'Camera: Età bambini', 'wp-alpinebits-reservation' ),
-				'notes'    => __( 'Valori separati da virgola nel campo CF7 (es. "5,8"). Ogni valore = età di un bambino.', 'wp-alpinebits-reservation' ),
+				'label'    => __( 'Camera 1: Età bambini', 'wp-alpinebits-reservation' ),
+				'notes'    => __( 'Seleziona "Raccolta multi-campo" e scegli i campi CF7 delle età (uno per bambino). I campi vuoti vengono ignorati automaticamente.', 'wp-alpinebits-reservation' ),
+			),
+			// --- Camera 2 ---
+			array(
+				'path'     => 'rooms.1.category',
+				'type'     => 'string',
+				'required' => false,
+				'group'    => self::GROUP_ROOM_2,
+				'label'    => __( 'Camera 2: Categoria', 'wp-alpinebits-reservation' ),
+				'notes'    => __( 'Obbligatorio se status = "reservation". Lascia vuoto se la Camera 2 non è usata.', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'     => 'rooms.1.occupants.adults',
+				'type'     => 'int',
+				'required' => false,
+				'group'    => self::GROUP_ROOM_2,
+				'label'    => __( 'Camera 2: Adulti', 'wp-alpinebits-reservation' ),
+			),
+			array(
+				'path'     => 'rooms.1.occupants.children',
+				'type'     => 'array_int',
+				'required' => false,
+				'group'    => self::GROUP_ROOM_2,
+				'label'    => __( 'Camera 2: Età bambini', 'wp-alpinebits-reservation' ),
+				'notes'    => __( 'Seleziona "Raccolta multi-campo" e scegli i campi CF7 delle età della seconda camera.', 'wp-alpinebits-reservation' ),
 			),
 			// --- Marketing ---
 			array(

@@ -273,6 +273,13 @@
 .wpar-msg--ok    { background: #d1e7dd; color: #0a3622; }
 .wpar-msg--fail  { background: #f8d7da; color: #58151c; }
 
+/* --- Mapping: multi-select raccolta campi -------------------------------- */
+.wpar-collect-select {
+    width: 100%;
+    min-height: 90px;
+    font-size: 12px;
+}
+
 /* --- Mapping: righe mappate -------------------------------------------- */
 .wpar-row-mapped {
     background-color: #f0faf0 !important;

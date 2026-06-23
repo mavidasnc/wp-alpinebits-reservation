@@ -137,6 +137,7 @@ class AdminMenu {
 					'loading'          => __( 'Caricamento...', 'wp-alpinebits-reservation' ),
 					'none'             => __( '— Nessuno (campo non mappato) —', 'wp-alpinebits-reservation' ),
 					'const'            => __( '— Valore costante —', 'wp-alpinebits-reservation' ),
+					'collect'          => __( '— Raccolta multi-campo —', 'wp-alpinebits-reservation' ),
 					'versionChecking'  => __( 'Controllo in corso...', 'wp-alpinebits-reservation' ),
 					'versionUpToDate'  => __( 'Sei alla versione più recente.', 'wp-alpinebits-reservation' ),
 					'versionAvailable' => __( 'Nuova versione disponibile:', 'wp-alpinebits-reservation' ),

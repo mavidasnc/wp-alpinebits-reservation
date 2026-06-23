@@ -113,6 +113,29 @@ class Repository {
 	}
 
 	/**
+	 * Aggiorna il payload e l'externalid di una riga (usato dal reinvio con mapping aggiornato).
+	 *
+	 * @param  int    $id         ID della riga.
+	 * @param  string $externalid Nuovo externalid generato.
+	 * @param  string $payload    Payload JSON aggiornato.
+	 * @return void
+	 */
+	public function update_payload( int $id, string $externalid, string $payload ): void {
+		global $wpdb;
+
+		$wpdb->update( // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+			self::table_name(),
+			array(
+				'externalid' => $externalid,
+				'payload'    => $payload,
+			),
+			array( 'id' => $id ),
+			array( '%s', '%s' ),
+			array( '%d' )
+		);
+	}
+
+	/**
 	 * Restituisce una riga per ID.
 	 *
 	 * @param  int $id ID della riga.

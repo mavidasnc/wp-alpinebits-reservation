@@ -133,12 +133,20 @@ class MappingTab {
 						$mapped_value = $current_map[ $path ] ?? '';
 						$is_mapped    = '' !== $mapped_value;
 
-						// Determina se il valore attuale è una costante.
+						// Determina il tipo di sorgente: campo CF7, costante o raccolta multi-campo.
 						$is_const       = str_starts_with( $mapped_value, '__const:' );
+						$is_collect     = str_starts_with( $mapped_value, '__collect:' );
 						$const_value    = $is_const ? substr( $mapped_value, 8 ) : '';
-						$selected_field = $is_const ? '__const' : $mapped_value;
-						$input_name     = 'wpar_mapping[' . esc_attr( $path ) . ']';
-						?>
+						$collect_saved  = $is_collect
+							? array_map( 'trim', explode( ',', substr( $mapped_value, strlen( '__collect:' ) ) ) )
+							: array();
+						$selected_field = match ( true ) {
+							$is_const   => '__const',
+							$is_collect => '__collect',
+							default     => $mapped_value,
+						};
+						$input_name = 'wpar_mapping[' . esc_attr( $path ) . ']';
+	?>
 						<tr class="wpar-mapping-row<?php echo $required ? ' wpar-required' : ''; ?><?php echo $is_mapped ? ' wpar-row-mapped' : ''; ?>" data-path="<?php echo esc_attr( $path ); ?>">
 							<!-- Colonna sinistra: select campo CF7 + input costante -->
 							<td class="wpar-col-source">
@@ -159,7 +167,36 @@ class MappingTab {
 									<option value="__const" <?php selected( $selected_field, '__const' ); ?>>
 										<?php esc_html_e( '— Valore costante —', 'wp-alpinebits-reservation' ); ?>
 									</option>
+									<?php if ( 'array_int' === $type ) : ?>
+										<option value="__collect" <?php selected( $selected_field, '__collect' ); ?>>
+											<?php esc_html_e( '— Raccolta multi-campo —', 'wp-alpinebits-reservation' ); ?>
+										</option>
+									<?php endif; ?>
 								</select>
+
+								<!-- Multi-select per raccolta di più campi CF7 (solo per array_int) -->
+								<?php if ( 'array_int' === $type ) : ?>
+									<div class="wpar-collect-wrap" style="<?php echo $is_collect ? '' : 'display:none;'; ?> margin-top:6px;">
+										<select
+											name="<?php echo esc_attr( $input_name ); ?>[collect][]"
+											class="wpar-collect-select"
+											multiple
+											size="5"
+										>
+											<?php foreach ( $form_fields as $cf7_name => $cf7_label ) : ?>
+												<option
+													value="<?php echo esc_attr( $cf7_name ); ?>"
+													<?php echo in_array( $cf7_name, $collect_saved, true ) ? 'selected' : ''; ?>
+												>
+													<?php echo esc_html( $cf7_label ); ?>
+												</option>
+											<?php endforeach; ?>
+										</select>
+										<p class="description" style="margin-top:4px; font-size:11px;">
+											<?php esc_html_e( 'Tieni premuto Ctrl (o Cmd su Mac) per selezionare più campi. L\'ordine di selezione determina l\'ordine nell\'array.', 'wp-alpinebits-reservation' ); ?>
+										</p>
+									</div>
+								<?php endif; ?>
 
 								<!-- Campo testo per il valore costante (visibile solo se selezionato __const) -->
 								<div class="wpar-const-wrap" style="<?php echo $is_const ? '' : 'display:none;'; ?> margin-top:6px;">
@@ -256,14 +293,21 @@ class MappingTab {
 				continue;
 			}
 
-			$source = sanitize_text_field( $value['source'] ?? '' );
-			$const  = sanitize_text_field( $value['const'] ?? '' );
+			$source      = sanitize_text_field( $value['source'] ?? '' );
+			$const       = sanitize_text_field( $value['const'] ?? '' );
+			$collect_raw = isset( $value['collect'] ) && is_array( $value['collect'] )
+				? $value['collect']
+				: array();
 
-			if ( '__const' === $source && '' !== $const ) {
+			if ( '__collect' === $source && ! empty( $collect_raw ) ) {
+				// Raccolta multi-campo: __collect:campo1,campo2,...
+				$collect_fields         = array_values( array_filter( array_map( 'sanitize_text_field', $collect_raw ) ) );
+				$clean_mapping[ $path ] = '__collect:' . implode( ',', $collect_fields );
+			} elseif ( '__const' === $source && '' !== $const ) {
 				// Valore costante.
 				$clean_mapping[ $path ] = '__const:' . $const;
-			} elseif ( '' !== $source && '__const' !== $source ) {
-				// Campo CF7.
+			} elseif ( '' !== $source && '__const' !== $source && '__collect' !== $source ) {
+				// Singolo campo CF7.
 				$clean_mapping[ $path ] = $source;
 			}
 			// Se source vuoto: non inserire (campo non mappato).

@@ -12,6 +12,7 @@ namespace Mavida\AlpineBitsReservation\Reservations;
 use Mavida\AlpineBitsReservation\Api\Client;
 use Mavida\AlpineBitsReservation\Mapping\FieldMapper;
 use Mavida\AlpineBitsReservation\Notifications\Notifier;
+use Mavida\AlpineBitsReservation\Settings\Options;
 
 /**
  * Classe Sender.
@@ -69,9 +70,12 @@ class Sender {
 	}
 
 	/**
-	 * Reinvia una submission esistente (identificata dall'ID riga nel DB).
+	 * Reinvia una submission esistente ricostruendo il payload dalla mappatura corrente.
 	 *
-	 * Riusa lo stesso externalid per garantire idempotenza lato gateway.
+	 * Se i dati CF7 originali sono disponibili (colonna cf7_data), il payload viene
+	 * ricostruito con la mappatura attualmente salvata — in modo che eventuali correzioni
+	 * alla mappatura si riflettano immediatamente nel reinvio.
+	 * Viene sempre generato un nuovo externalid (nessuna idempotenza con l'invio originale).
 	 *
 	 * @param  int $row_id ID della riga nel DB.
 	 * @return bool        True se la chiamata API ha avuto successo.
@@ -84,23 +88,33 @@ class Sender {
 			return false;
 		}
 
-		// Decodifica il payload JSON salvato.
-		$payload = json_decode( $row->payload, true );
+		$cf7_data = ! empty( $row->cf7_data )
+			? ( json_decode( $row->cf7_data, true ) ?? [] )
+			: [];
 
-		if ( ! is_array( $payload ) ) {
-			return false;
+		if ( ! empty( $cf7_data ) ) {
+			// Ricostruisce il payload con la mappatura correntemente salvata.
+			$mapping = Options::field_mapping( (int) $row->form_id );
+			$payload = ( new FieldMapper() )->build( $cf7_data, $mapping );
+		} else {
+			// Fallback: usa il payload originale (cf7_data non disponibile).
+			$payload = json_decode( $row->payload, true );
+			if ( ! is_array( $payload ) ) {
+				return false;
+			}
 		}
 
-		// Aggiorna lo stato a pending prima del tentativo.
-		$repository->update_status(
-			$row_id,
-			Repository::STATUS_PENDING,
-			0,
-			'',
-			''
-		);
+		// Genera sempre un nuovo externalid per il reinvio.
+		$new_externalid        = $this->generate_external_id();
+		$payload['externalid'] = $new_externalid;
 
-		// Esegue la chiamata API con lo stesso payload (e stesso externalid).
+		// Aggiorna payload ed externalid nel DB prima di inviare.
+		$repository->update_payload( $row_id, $new_externalid, (string) wp_json_encode( $payload ) );
+
+		// Imposta lo stato a pending.
+		$repository->update_status( $row_id, Repository::STATUS_PENDING, 0, '', '' );
+
+		// Esegue la chiamata API con il payload ricostruito.
 		$api_response = ( new Client() )->send_reservation( $payload );
 
 		$status = $api_response->success ? Repository::STATUS_SUCCESS : Repository::STATUS_ERROR;
@@ -114,16 +128,12 @@ class Sender {
 
 		// Invia notifica email per il reinvio riuscito.
 		if ( $api_response->success ) {
-			$cf7_data = ! empty( $row->cf7_data )
-				? ( json_decode( $row->cf7_data, true ) ?? [] )
-				: [];
-
 			( new Notifier() )->send(
 				Notifier::EVENT_RESEND_SUCCESS,
 				(int) $row->form_id,
 				$cf7_data,
 				$api_response,
-				(string) $row->externalid
+				$new_externalid
 			);
 		}
 

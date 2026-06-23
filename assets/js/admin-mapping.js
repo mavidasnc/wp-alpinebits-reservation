@@ -18,17 +18,25 @@
 	var i18n   = wparAdmin.i18n;
 
 	// -----------------------------------------------------------------------
-	// 1. Toggle "Valore costante"
+	// 1. Toggle "Valore costante" / "Raccolta multi-campo"
 	// -----------------------------------------------------------------------
 	$( document ).on( 'change', '.wpar-source-select', function () {
-		var $select   = $( this );
-		var $constWrap = $select.closest( 'td' ).find( '.wpar-const-wrap' );
+		var $select      = $( this );
+		var $td          = $select.closest( 'td' );
+		var $constWrap   = $td.find( '.wpar-const-wrap' );
+		var $collectWrap = $td.find( '.wpar-collect-wrap' );
+		var val          = $select.val();
 
-		if ( $select.val() === '__const' ) {
+		if ( val === '__const' ) {
 			$constWrap.show();
+			$collectWrap.hide();
+		} else if ( val === '__collect' ) {
+			$constWrap.hide();
+			$collectWrap.show();
 		} else {
 			$constWrap.hide();
 			$constWrap.find( '.wpar-const-input' ).val( '' );
+			$collectWrap.hide();
 		}
 	} );
 
@@ -64,10 +72,12 @@
 
 				var fields = response.data.fields || {};
 
-				// Ricostruisce le select con i nuovi campi.
+				// Ricostruisce le source-select con i nuovi campi CF7.
 				$wrap.find( '.wpar-source-select' ).each( function () {
 					var $sel        = $( this );
+					var $td         = $sel.closest( 'td' );
 					var currentVal  = $sel.val();
+					var hasCollect  = $td.find( '.wpar-collect-wrap' ).length > 0;
 					var options     = '<option value="">' + i18n.none + '</option>';
 
 					$.each( fields, function ( name, label ) {
@@ -81,13 +91,35 @@
 						+ ( currentVal === '__const' ? ' selected' : '' )
 						+ '>' + i18n.const + '</option>';
 
+					if ( hasCollect ) {
+						options += '<option value="__collect"'
+							+ ( currentVal === '__collect' ? ' selected' : '' )
+							+ '>' + i18n.collect + '</option>';
+					}
+
 					$sel.html( options );
 
-					// Reimposta la visibilità del campo costante.
-					var $constWrap = $sel.closest( 'td' ).find( '.wpar-const-wrap' );
-					if ( $sel.val() !== '__const' ) {
-						$constWrap.hide();
-					}
+					// Reimposta la visibilità dei pannelli.
+					var $constWrap   = $td.find( '.wpar-const-wrap' );
+					var $collectWrap = $td.find( '.wpar-collect-wrap' );
+					if ( $sel.val() !== '__const' ) { $constWrap.hide(); }
+					if ( $sel.val() !== '__collect' ) { $collectWrap.hide(); }
+				} );
+
+				// Ricostruisce i multi-select per la raccolta (array_int).
+				$wrap.find( '.wpar-collect-select' ).each( function () {
+					var $msel       = $( this );
+					var currentVals = $msel.val() || [];
+					var options     = '';
+
+					$.each( fields, function ( name, label ) {
+						var selected = currentVals.indexOf( name ) !== -1 ? ' selected' : '';
+						options += '<option value="' + escAttr( name ) + '"' + selected + '>'
+							+ escHtml( label )
+							+ '</option>';
+					} );
+
+					$msel.html( options );
 				} );
 
 				$spinner.hide();

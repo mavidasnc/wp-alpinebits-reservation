@@ -3,7 +3,7 @@
  * Plugin Name:       WP AlpineBits Reservation
  * Plugin URI:        https://github.com/mavidasnc/wp-alpinebits-reservation
  * Description:       Intercetta form Contact Form 7 e li invia all'endpoint sendReservation dell'API AlpineBits Gateway.
- * Version:           0.2.4
+ * Version:           0.3.0
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Maurizio Mavida
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Costanti del plugin.
-define( 'WPAR_VERSION', '0.2.4' );
+define( 'WPAR_VERSION', '0.3.0' );
 define( 'WPAR_PLUGIN_FILE', __FILE__ );
 define( 'WPAR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'WPAR_PLUGIN_URL', plugin_dir_url( __FILE__ ) );

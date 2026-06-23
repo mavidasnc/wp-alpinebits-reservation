@@ -7,6 +7,18 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-06-23
+
+### Aggiunto
+- **Reinvio con mapping aggiornato**: il pulsante "Reinvia" nel tab Invii ricostruisce ora il payload partendo dai dati CF7 originali (colonna `cf7_data`) applicando la mappatura **correntemente salvata**, anziché riusare il payload storico. Genera sempre un nuovo `externalid`.
+- **Raccolta multi-campo** (`__collect:`): nuovo tipo di sorgente nel tab Mapping per i campi `array_int`. Selezionando "Raccolta multi-campo" appare un multi-select con tutti i campi CF7; i campi selezionati vengono raccolti, i vuoti ignorati, e il risultato inviato come array di interi (es. `[8, 5]` per le età bambini). Usato per `eta1`, `eta2`, … → `rooms.0.occupants.children`.
+- **Camera 2**: schema API esteso con `rooms.1.category`, `rooms.1.occupants.adults`, `rooms.1.occupants.children` (gruppo "Camera 2") per il mapping della seconda piazzola (`piazzola2`, `adulti2`, `eta1 2`, …).
+- `Repository::update_payload()`: nuovo metodo per aggiornare `externalid` e `payload` nel DB al reinvio.
+- `FieldMapper`: nuovo prefisso `__collect:`, metodo `collect_values()`, skip automatico di array vuoti nel payload.
+
+### Modificato
+- `ApiSchema`: gruppo "Camera" rinominato "Camera 1"; aggiornate le note per i campi `children` delle due camere.
+
 ## [0.2.4] - 2026-06-23
 
 ### Corretto
@@ -72,7 +84,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.4...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.4...v0.3.0
 [0.2.4]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...v0.2.2

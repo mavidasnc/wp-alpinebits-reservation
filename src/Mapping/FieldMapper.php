@@ -10,7 +10,6 @@ declare( strict_types=1 );
 namespace Mavida\AlpineBitsReservation\Mapping;
 
 use Mavida\AlpineBitsReservation\Schema\ApiSchema;
-use Mavida\AlpineBitsReservation\Settings\Options;
 
 /**
  * Classe FieldMapper.
@@ -34,6 +33,14 @@ class FieldMapper {
 	const CONST_PREFIX = '__const:';
 
 	/**
+	 * Prefisso per la raccolta di più campi CF7 in un array (es. età bambini).
+	 * Formato: "__collect:eta1,eta2,eta3"
+	 *
+	 * @var string
+	 */
+	const COLLECT_PREFIX = '__collect:';
+
+	/**
 	 * Costruisce il payload per l'API a partire dai posted_data di CF7.
 	 *
 	 * @param  array<string, mixed>  $posted_data Dati grezzi dal form CF7.
@@ -48,8 +55,8 @@ class FieldMapper {
 			$type  = $field_def['type'];
 			$value = $this->resolve_value( $path, $type, $posted_data, $mapping );
 
-			// Salta i campi senza valore (null o stringa vuota per non-required).
-			if ( null === $value || '' === $value ) {
+			// Salta i campi senza valore: null, stringa vuota o array vuoto.
+			if ( null === $value || '' === $value || [] === $value ) {
 				continue;
 			}
 
@@ -92,6 +99,13 @@ class FieldMapper {
 		if ( str_starts_with( $mapped, self::CONST_PREFIX ) ) {
 			$raw = substr( $mapped, strlen( self::CONST_PREFIX ) );
 			return $this->cast( $raw, $type );
+		}
+
+		// Raccolta di più campi CF7: __collect:campo1,campo2,...
+		// Usato per array_int (es. età bambini da campi separati).
+		if ( str_starts_with( $mapped, self::COLLECT_PREFIX ) ) {
+			$field_names = array_map( 'trim', explode( ',', substr( $mapped, strlen( self::COLLECT_PREFIX ) ) ) );
+			return $this->collect_values( $field_names, $posted_data );
 		}
 
 		// Valore dal campo CF7.
@@ -173,6 +187,39 @@ class FieldMapper {
 				static fn( int $v ): bool => $v >= 0
 			)
 		);
+	}
+
+	/**
+	 * Raccoglie valori da più campi CF7 e li restituisce come array di interi.
+	 *
+	 * I campi vuoti o non presenti nei posted_data vengono ignorati.
+	 * Usato per mappare campi separati (es. eta1, eta2, eta3) in un array di età.
+	 *
+	 * @param  string[]             $field_names Nomi dei campi CF7 da raccogliere.
+	 * @param  array<string, mixed> $posted_data Dati grezzi CF7.
+	 * @return int[]                             Array di interi (vuoto se nessun campo valorizzato).
+	 */
+	private function collect_values( array $field_names, array $posted_data ): array {
+		$result = array();
+
+		foreach ( $field_names as $field_name ) {
+			$raw = $posted_data[ $field_name ] ?? null;
+
+			if ( is_array( $raw ) ) {
+				$raw = $raw[0] ?? '';
+			}
+
+			$raw = trim( (string) $raw );
+
+			// Salta campi vuoti — non significa età 0.
+			if ( '' === $raw ) {
+				continue;
+			}
+
+			$result[] = (int) $raw;
+		}
+
+		return $result;
 	}
 
 	/**
