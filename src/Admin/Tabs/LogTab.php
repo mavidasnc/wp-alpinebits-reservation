@@ -168,17 +168,39 @@ class LogTab {
 						<!-- Riga di dettaglio (nascosta di default) -->
 						<tr id="wpar-detail-<?php echo esc_attr( (string) $row->id ); ?>" class="wpar-detail-row" style="display:none;">
 							<td colspan="9">
+								<div class="wpar-detail-meta">
+									<?php if ( $row->http_code ) : ?>
+										<span>HTTP <strong><?php echo esc_html( (string) $row->http_code ); ?></strong></span>
+										<span class="wpar-detail-meta-sep">|</span>
+									<?php endif; ?>
+									<span>
+										<?php
+										printf(
+											/* translators: %d: numero di tentativi */
+											esc_html( _n( '%d tentativo', '%d tentativi', (int) $row->attempts, 'wp-alpinebits-reservation' ) ),
+											(int) $row->attempts
+										);
+										?>
+									</span>
+									<span class="wpar-detail-meta-sep">|</span>
+									<span>
+										<?php esc_html_e( 'Ultimo invio:', 'wp-alpinebits-reservation' ); ?>
+										<strong><?php echo esc_html( $row->updated_at ); ?></strong>
+									</span>
+								</div>
 								<div class="wpar-detail-wrap">
 									<div class="wpar-detail-col">
 										<strong><?php esc_html_e( 'Payload inviato:', 'wp-alpinebits-reservation' ); ?></strong>
 										<pre class="wpar-json"><?php echo esc_html( $this->pretty_json( (string) $row->payload ) ); ?></pre>
 									</div>
-									<?php if ( $row->response ) : ?>
-										<div class="wpar-detail-col">
-											<strong><?php esc_html_e( 'Risposta API:', 'wp-alpinebits-reservation' ); ?></strong>
+									<div class="wpar-detail-col">
+										<strong><?php esc_html_e( 'Risposta API:', 'wp-alpinebits-reservation' ); ?></strong>
+										<?php if ( ! empty( $row->response ) ) : ?>
 											<pre class="wpar-json"><?php echo esc_html( $this->pretty_json( (string) $row->response ) ); ?></pre>
-										</div>
-									<?php endif; ?>
+										<?php else : ?>
+											<p class="wpar-no-response">—</p>
+										<?php endif; ?>
+									</div>
 								</div>
 							</td>
 						</tr>

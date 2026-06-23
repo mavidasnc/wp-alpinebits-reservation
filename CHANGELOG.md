@@ -7,6 +7,15 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-06-23
+
+### Aggiunto
+- Tab Invii: barra di meta-info nel dettaglio inline (codice HTTP, numero di tentativi, data e ora dell'ultimo invio).
+- Tab Invii: la colonna "Risposta API" è ora sempre visibile nel dettaglio, anche quando vuota (mostra `—`).
+
+### Corretto
+- `Sender`: quando la chiamata API fallisce per errore di trasporto WP (timeout, DNS, SSL), il messaggio di errore viene ora serializzato come JSON e salvato nella colonna `response`, rendendolo visibile nel log invece di risultare vuoto.
+
 ## [0.2.1] - 2026-06-12
 
 ### Corretto
@@ -53,7 +62,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...HEAD
+[0.2.2]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/mavidasnc/wp-alpinebits-reservation/releases/tag/v0.1.0

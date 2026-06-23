@@ -57,7 +57,7 @@ class Sender {
 			$row_id,
 			$status,
 			$api_response->http_code,
-			$api_response->raw_body,
+			$this->response_body( $api_response ),
 			$api_response->remote_id
 		);
 
@@ -108,7 +108,7 @@ class Sender {
 			$row_id,
 			$status,
 			$api_response->http_code,
-			$api_response->raw_body,
+			$this->response_body( $api_response ),
 			$api_response->remote_id
 		);
 
@@ -138,5 +138,23 @@ class Sender {
 	 */
 	private function generate_external_id(): string {
 		return 'WPAR' . strtoupper( substr( md5( uniqid( '', true ) ), 0, 12 ) );
+	}
+
+	/**
+	 * Restituisce il body della risposta da salvare nel DB.
+	 *
+	 * Se raw_body è vuoto (es. errore di trasporto WP: timeout, DNS), serializza
+	 * il messaggio di errore come JSON in modo che sia sempre visibile nel log.
+	 *
+	 * @param  \Mavida\AlpineBitsReservation\Api\ApiResponse $api_response Risposta API.
+	 * @return string                                                        Body da salvare.
+	 */
+	private function response_body( \Mavida\AlpineBitsReservation\Api\ApiResponse $api_response ): string {
+		if ( '' !== $api_response->raw_body ) {
+			return $api_response->raw_body;
+		}
+		return '' !== $api_response->error
+			? (string) wp_json_encode( [ 'error' => $api_response->error ] ) // phpcs:ignore WordPress.WP.AlternativeFunctions.json_encode_json_encode
+			: '';
 	}
 }
