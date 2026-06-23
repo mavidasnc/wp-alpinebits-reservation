@@ -7,6 +7,11 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 
 ## [Unreleased]
 
+## [0.2.4] - 2026-06-23
+
+### Corretto
+- `ApiResponse`: rimosso `readonly class` (PHP 8.2+) e sostituito con `readonly` sulle singole proprietà del costruttore (PHP 8.1 compatibile). Il plugin dichiara `Requires PHP: 8.1` e il server di produzione causava un `PHP Parse error` al caricamento.
+
 ## [0.2.3] - 2026-06-23
 
 ### Corretto
@@ -67,7 +72,8 @@ e questo progetto aderisce al [Versionamento Semantico](https://semver.org/lang/
 - Updater automatico tramite release GitHub (yahnis-elsts/plugin-update-checker).
 - PHPCS con ruleset WordPress-Extra + PHPCompatibility PHP 8.1.
 
-[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...HEAD
+[Unreleased]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.4...HEAD
+[0.2.4]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.3...v0.2.4
 [0.2.3]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.2...v0.2.3
 [0.2.2]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.1...v0.2.2
 [0.2.1]: https://github.com/mavidasnc/wp-alpinebits-reservation/compare/v0.2.0...v0.2.1

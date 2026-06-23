@@ -14,7 +14,7 @@ namespace Mavida\AlpineBitsReservation\Api;
  *
  * Value object immutabile che incapsula l'esito di una chiamata API.
  */
-readonly class ApiResponse {
+class ApiResponse {
 
 	/**
 	 * Costruttore.
@@ -26,10 +26,10 @@ readonly class ApiResponse {
 	 * @param string $remote_id ID restituito dall'API in caso di successo (data.id).
 	 */
 	public function __construct(
-		public bool $success,
-		public int $http_code,
-		public string $raw_body,
-		public string $error = '',
-		public string $remote_id = '',
+		public readonly bool $success,
+		public readonly int $http_code,
+		public readonly string $raw_body,
+		public readonly string $error = '',
+		public readonly string $remote_id = '',
 	) {}
 }
